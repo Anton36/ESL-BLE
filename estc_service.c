@@ -26,7 +26,7 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE
-*/
+ */
 
 #include "estc_service.h"
 
@@ -37,17 +37,29 @@
 #include "ble_gatts.h"
 #include "ble_srv_common.h"
 
+ble_estc_service_t estc_service;
+
 ret_code_t estc_ble_service_init(ble_estc_service_t *service)
 {
-    ret_code_t error_code = NRF_SUCCESS;
+    ret_code_t error_code;
 
     ble_uuid_t service_uuid;
-    // TODO: 3. Add service UUIDs to the BLE stack table using `sd_ble_uuid_vs_add`
-    // TODO: 4. Add service to the BLE stack using `sd_ble_gatts_service_add`
 
-    // NRF_LOG_DEBUG("%s:%d | Service UUID: 0x%04x", __FUNCTION__, __LINE__, service_uuid.uuid);
-    // NRF_LOG_DEBUG("%s:%d | Service UUID type: 0x%02x", __FUNCTION__, __LINE__, service_uuid.type);
-    // NRF_LOG_DEBUG("%s:%d | Service handle: 0x%04x", __FUNCTION__, __LINE__, service->service_handle);
+    ble_uuid128_t uuid_base = {ESTC_BASE_UUID};
+    uint8_t uuid_type;
+
+    error_code = sd_ble_uuid_vs_add(&uuid_base, &uuid_type);
+    APP_ERROR_CHECK(error_code);
+
+    service_uuid.type = uuid_type;
+    service_uuid.uuid = ESTC_SERVICE_UUID;
+
+    error_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &service_uuid, &estc_service.service_handle);
+    APP_ERROR_CHECK(error_code);
+
+    NRF_LOG_DEBUG("%s:%d | Service UUID: 0x%04x", __FUNCTION__, __LINE__, service_uuid.uuid);
+    NRF_LOG_DEBUG("%s:%d | Service UUID type: 0x%02x", __FUNCTION__, __LINE__, service_uuid.type);
+    NRF_LOG_DEBUG("%s:%d | Service handle: 0x%04x", __FUNCTION__, __LINE__, service->service_handle);
 
     return NRF_SUCCESS;
 }
